@@ -1,0 +1,118 @@
+header .navbar-inverse{
+    background-color: #343536;
+    border-color: #080808;
+    font-family: "Microsoft YaHei", "Ubuntu", Arial, sans-serif;
+}
+
+header .navbar-inverse .navbar-nav>li>a {
+    color: #b2b2b0;
+    cursor: pointer;
+}
+
+header>.modal>.modal-dialog {
+    position: absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-80%) !important;
+    width: auto;
+    border-radius: 4px;
+}
+
+header>.modal .modal-header {
+    background-color: #f8f8f8;
+    border-bottom: none;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+
+header .input-box {
+    position: relative;
+    min-width: 340px;
+    height: 46px;
+    line-height: 44px;
+    border: 1px solid #DADADA;
+    margin-bottom: 20px;
+}
+
+header .input-box:last-child {
+    margin-bottom: 0px;
+}
+
+header .input-box:focus-within {
+    border: 1px solid #2e6da4;
+}
+
+header .input-box>div {
+    position: relative;
+    float: left;
+    height: 100%;
+}
+
+header .input-box .icon {
+    padding: 0 5px 0 10px;
+}
+
+header .input-box input {
+    width: 205px;
+    height: 100%;
+    padding-left: 8px;
+    border: none;
+}
+
+header .input-box input:focus {
+    border: none;
+    outline: none;
+}
+
+header>.modal .modal-footer {
+    border-top: none;
+    padding-top: 0px;
+    padding-bottom: 30px;
+}
+
+header>.modal .modal-footer .assist-input {
+    height: 20px;
+    font-size: 10px;
+}
+
+header>.modal .modal-footer .checkbox-input {
+    float: left;
+}
+
+header>.modal .modal-footer .checkbox-input>input {
+    margin: 3px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+header>.modal .modal-footer .checkbox-input>label {
+    margin: 0;
+    vertical-align: middle;
+    font-weight: normal;
+}
+
+header>.modal .modal-footer> .assist-input>div:nth-child(2) {
+    float: right;
+}
+
+header>.modal .modal-footer .submit-input {
+    margin-top: 10px;
+}
+
+header>.modal .modal-footer .submit-input {
+    padding-top: 10px;
+}
+
+header>.modal .modal-footer .submit-input>button{
+    width: 100%;
+    font-size: medium;
+    font-weight: bold;
+}
+
+
+

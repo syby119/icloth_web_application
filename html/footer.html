@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="../css/footer.css">
+<head>
+<body>
+    <footer class="container-fluid">
+        <div class="row">
+            <div class="col-xs-12 text-center">
+                <div class="brand">ZJU GIVE</div>
+                <ul class="list-inline footer-secondary">
+                    <li>
+                        <a id= "copyright" href="#"></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+    <script>
+        window.onload = function() {
+            var a = document.getElementById("copyright");
+            var year = new Date().getFullYear();
+            a.innerHTML = "Copyrights © " + year + " Zhejiang University. All rights reserved";
+        };
+    </script>
+<body>
+</html>
