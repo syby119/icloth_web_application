@@ -4,8 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script type="module">
+        import { Icon } from "./js/components/icon.js"
+        import { Tip } from "./js/components/tip.js"
+        import { Button } from "./js/components/button.js"
+        import { ButtonGroup } from "./js/components/button-group.js"
+    </script>
+    <style>
+        #triangle-up{
+            display:inline-block;
+            width:0;
+            height:0;
+            border-left:30px solid transparent;
+            border-right: 30px solid transparent;
+            border-bottom:50px solid red;}
+        #triangle-down {
+            display:inline-block;
+            width:0;
+            height:0;
+            border-left:30px solid transparent;
+            border-right: 30px solid transparent;
+            border-top:50px solid red;}
+        #triangle-left {
+            display:inline-block;
+            width:0;
+            height:0;
+            border-top: 30px solid transparent;
+            border-right: 50px solid red;
+            border-bottom: 30px solid transparent;}
+        #triangle-right{
+            display:inline-block;
+            width:0;
+            height:0;
+            border-top: 30px solid transparent;
+            border-left: 50px solid red;
+            border-bottom: 30px solid transparent;}
+    </style>
 </head>
 <body>
-    
+    <div style="height: 300px; display: flex; justify-content: center; align-items: center;">
+        <i-tip tip="hhhhhhhhhh" class="tip-left-top">
+            <i-button></i-button>
+        </i-tip>
+    </div>
+    <div style="height: 500px; display: flex; justify-content: center; align-items: center;">
+        <i-tip tip="hhhhhhhhhh" class="tip-left-bottom">
+            <i-button></i-button>
+        </i-tip>
+    </div>
 </body>
 </html>
