@@ -30,6 +30,10 @@ class Button extends HTMLElement {
                     border: 1px solid rgba(0, 0, 0, 0.2);
                     color: black;
                 }
+                :host(.btn-flat) {
+                    border: 0;
+                    background-color: transparent;
+                }
                 :host(.btn-round) {
                     border-radius: 1024px;
                     padding: 0.25em 0.25em;
@@ -82,7 +86,8 @@ class Button extends HTMLElement {
             </style>
             <${this.href ? "a" : "button"} 
              ${this.type ? 'type="' + this.type + '"' : ''} 
-             ${(this.download&&this.href) ? 'download="' + this.download + '"' : ''} 
+             ${this.type == "submit" && this.form ? 'form="' + this.form + '"' : "" }
+             ${(this.download && this.href) ? 'download="' + this.download + '"' : ''} 
              ${this.href ? 'href="' + this.href + '" target="' + this.target + '" rel=' + this.rel + '"' : ''} 
              class="btn">
             </${this.href ? "a" : "button"}>
@@ -118,6 +123,9 @@ class Button extends HTMLElement {
     // button: submitted as a pair with the button’s value as part of the form data
     get name() { return this.getAttribute("name"); }
     set name(val) { return this.setAttribute("name", val); }
+
+    // button: the form the button belong to
+    get form() { return this.getAttribute("form"); }
     
     // a: the URL that the hyperlink points to 
     get href() { return this.getAttribute("href"); }
@@ -139,21 +147,17 @@ class Button extends HTMLElement {
     }
 
     attributeChangedCallback(name, oldVal, newVal) {
-        if (!this.btn) {
-            return;
-        }
-
-        if (name == "href") {
+        if (name == "href" && this.btn) {
             if (!this.disabled) {
                 this.btn.href = newVal;
             }
         }
 
-        if (name == "type") {
+        if (name == "type" && this.btn) {
             this.btn.type = newVal;
         }
 
-        if (name == "disabled") {
+        if (name == "disabled" && this.btn) {
             if (newVal !== null) {
                 this.btn.setAttribute("disabled", "disabled");
                 if (this.hasAttribute("href")) {
@@ -181,7 +185,7 @@ class Button extends HTMLElement {
     }
 };
 
-alert("button的hover还没做！！！");
+// alert("button的hover还没做！！！");
 
 if (!customElements.get("i-button")) {
     customElements.define("i-button", Button);

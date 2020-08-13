@@ -360,6 +360,9 @@ class Tip extends HTMLElement {
     
     get tip() { return this.getAttribute("tip"); }
     set tip(val) { return this.setAttribute("tip", val); }
+    // boolean: true / false
+    get show() { return this.getAttribute("show"); }
+    set show(val) { return this.setAttribute("show", val); }
 };
 
 if (!customElements.get("i-tip")) {
