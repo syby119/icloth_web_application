@@ -7,7 +7,36 @@ class Pagination extends HTMLElement {
         this.attachShadow({ mode: "open" });
         this.shadowRoot.innerHTML = `
             <style>
-
+                :host {
+                    display: flex;
+                    font-size: 14px;
+                }
+                i-button {
+                    margin: 0 0.3em;
+                    width: 2.3em;
+                    height: 2.3em;
+                    padding: 1px;
+                    font-size: inherit;
+                    box-sizing: content-box;
+                }
+                i-button[tabindex] {
+                    justify-content: center;
+                    align-items: center;
+                    pointer-events: none;
+                }
+                i-button[current] {
+                    background: var(--themeBackground, var(--themeColor, #42b983));
+                    border-color: var(--themeColor, #42b983);
+                    color: white;
+                }
+                .page-container {
+                    display: inline-flex;
+                }
+                .icon {
+                    width: 1em;
+                    height: 1em;
+                    fill: currentColor;
+                }
             </style>
             <i-button class="btn-flat btn-left" ${this.href ? "href=1" : ""} target="_self">
                 <i-icon name="left"></i-icon>
@@ -21,33 +50,37 @@ class Pagination extends HTMLElement {
 
     }
 
-    get currentPage() { return this.currentPage; }
+    get currentPage() { return this.current; }
     set currentPage(val) {
         if (this.currentPage !== val) {
-            this.currentPage = Math.min(Math.max(1, val), this.pageCount);
+            this.current = Math.min(Math.max(1, val), this.pageCount);
             this.updatePage();
             if (this.init) {
-                this.dispatchEvent(new CustomEvent("change". {
+                this.dispatchEvent(new CustomEvent("change", {
                     detail: {
                         currentPage: this.current,
-                        
+                        pageCapacity: this.pageCapacity,
+                        itemCount: this.itemCount
                     }
                 }))
             }
         }
     }
 
-    static get observeredAttributes() {
+    static get observedAttributes() {
         return ["page-capacity", "item-count"];
     }
 
     attributeChangedCallback(name, oldVal, newVal) {
-        if (name == "page-capacity" && this.page) {
+        console.log("attribute changed: " + name);
+        if (name == "page-capacity" && this.pageContainer) {
+            console.log("page-capacity changed");
             this.pageCapacity = newVal;
             this.render();
         }
-        if (name == "item-count" && this.page) {
-            this.totalItems = newVal;
+
+        if (name == "item-count" && this.pageContainer) {
+            this.itemCount = newVal;
             this.render();
         }
     }
@@ -55,25 +88,25 @@ class Pagination extends HTMLElement {
     get pageCapacity() { return this.getAttribute("page-capacity") || 1; }
     set pageCapacity(val) { this.setAttribute("page-capacity", val); }
 
-    get totalItems() { return this.getAttribute("item-count") || 0; }
-    set totalItems(val) { this.setAttribute("item-count", val); }
+    get itemCount() { return this.getAttribute("item-count") || 0; }
+    set itemCount(val) { this.setAttribute("item-count", val); }
 
-    get pageCount() { return Math.ceil(this.totalItems / this.pageCapacity); }
+    get pageCount() { return Math.ceil(this.itemCount / this.pageCapacity); }
 
-    render(pagesize, total) {
+    render() {
         const html = Array.from({ length: this.pageCount }, (v, i)=>i+1)
                           .splice(0, 9)
                           .map(pageNo=>`
-                              <xy-button ${this.href ? "href=" + pageNo : ""} 
-                                          target="_self" 
-                                          ${pageNo == this.currentPage ? "current" : ""} 
-                                          class="btn-flat"
-                                          data-page-no="${pageNo}">
+                              <i-button ${this.href ? "href=" + pageNo : ""} 
+                                        target="_self" 
+                                        ${pageNo == this.currentPage ? "current" : ""} 
+                                        class="btn-flat"
+                                        data-page-no="${pageNo}">
                                   ${pageNo}
-                              </xy-button>`)
+                              </i-button>`)
                           .join('');
         this.pageContainer.innerHTML = html;
-        this.update();
+        this.updatePage();
     }
 
     updatePage(currentPage = this.currentPage, pageCount = this.pageCount) {
@@ -81,7 +114,8 @@ class Pagination extends HTMLElement {
         this.btnRight.disabled = (currentPage == pageCount);
 
         if (this.href) {
-            this.btnLeft.href = this.href + "=" + 
+            this.btnLeft.href = this.href + "=" + (current - 1);
+            this.btnRight.href = this.href + "=" + (current + 1);
         }
 
         if (pageCount > 9) {
@@ -101,13 +135,13 @@ class Pagination extends HTMLElement {
             } else {
                 // 1 ... currentPage-2 ~ currentPage+2 ... pageCount 
                 place.push(1, "...");
-                for (let i = -2; i > 2; ++i) {
+                for (let i = -2; i <= 2; ++i) {
                     place.push(currentPage + i);
                 }
                 place.push("...", pageCount);
             }
 
-            this.pageContainer.querySelector("i-button").forEach((el, i)=>{
+            this.pageContainer.querySelectorAll("i-button").forEach((el, i)=>{
                 if (typeof place[i] === "number") {
                     el.dataset.pageNo = place[i];
                     el.textContent = place[i];
@@ -135,7 +169,7 @@ class Pagination extends HTMLElement {
                     el.removeAttribute("current");
                 }
                 if (this.href) {
-                    el.href = this.href + "=" + el.dataset.current;
+                    el.href = this.href + "=" + el.dataset.pageNo;
                 }
             });
         }
@@ -143,10 +177,10 @@ class Pagination extends HTMLElement {
 
     connectedCallback() {
         this.pageContainer = this.shadowRoot.querySelector(".page-container");
-        this.left = this.shadowRoot.querySelector(".btn-left");
-        this.right = this.shadowRoot.querySelector(".btn-right");
+        this.btnLeft = this.shadowRoot.querySelector(".btn-left");
+        this.btnRight = this.shadowRoot.querySelector(".btn-right");
 
-        this.currentPage = 1;
+        this.current = 1;
         this.render();
 
         this.pageContainer.addEventListener("click", (ev)=>{
@@ -173,6 +207,8 @@ class Pagination extends HTMLElement {
         this.btnRight.addEventListener("click", (ev)=> {
             this.currentPage += 1;
         });
+
+        this.init = true;
     }
 }
 
@@ -180,5 +216,4 @@ if (!customElements.get("i-pagination")) {
     customElements.define("i-pagination", Pagination);
 }
 
-
-export { Button }
+export { Pagination }
