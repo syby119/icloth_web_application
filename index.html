@@ -14,6 +14,7 @@
         import { Form } from "./js/components/form.js" // tested
         import { Pagination } from "./js/components/pagination.js"  // tested
         import { Modal } from "./js/components/modal.js"
+        import { ColorPicker } from "./js/components/color-picker.js"
     </script>
     <style>
         i-img {
@@ -24,7 +25,7 @@
     </style>
 </head>
 <body>
-    <i-pagination page-capacity="6" item-count="100"></i-pagination>
+    <i-color-picker></i-color-picker>
     <!-- <i-dropdown>
         <i-button></i-button>
         <i-dropdown-menu>
@@ -42,8 +43,7 @@
 
 <script>
     window.onload = function() {
-        document.querySelector("i-pagination").pageCapacity = 6;
-        document.querySelector("i-pagination").currentPage = 6;
+        
     }
 </script>
 </html>
