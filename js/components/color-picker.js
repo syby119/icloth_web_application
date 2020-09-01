@@ -10,19 +10,23 @@ class ColorPicker extends HTMLElement {
             <canvas width="400" height="400"></canvas>
         `;
 
+        this.width = 400;
+        this.height = 400;
+
         this.hsv = { h: 0, s: 0, v: 0 };
         this.rgb = { r: 0, g: 0, b: 0 };
         this.hex = "#000000";
         this.alpha = 1;
 
-        this.backgroundColor = "#FFFFFF";
+        this.backgroundColor = "#535353";
 
         this.ringRadius = 100;
         this.ringLineWidth = 20;
-        this.ringOuterStrokeStyle = "rgba(255, 255, 255, 1)";
-        this.ringInnerStrokeStyle = "rgba(255, 255, 255, 1)";
+        this.ringOuterStrokeStyle = "#494949";
+        this.ringInnerFillStyle = "#2D2D2D";
+        this.ringInnerCircleFillStyle = "#272727";
 
-        this.areaShape = "quad";
+        this.areaShape = "quadrangle";
     }
 
     connectedCallback() {
@@ -31,12 +35,16 @@ class ColorPicker extends HTMLElement {
 
         this.circleCenter = {x: 200, y: 200};
 
+        this.drawBackground();
         this.drawHueRing();
-        this.drawSvArea(this.areaShape);
+        this.drawHueRingCursor();
+        this.drawSvArea();
+        this.drawSvAreaCursor();
     }
 
-    drawBackground(canvas) {
-
+    drawBackground() {
+        this.context.fillStyle = this.backgroundColor;
+        this.context.fillRect(0, 0, this.width, this.height);
     }
 
     drawHueRing() {
@@ -54,6 +62,7 @@ class ColorPicker extends HTMLElement {
             this.context.stroke();
         }
 
+        // outline for antialias
         this.context.lineWidth = 0.5;
         this.context.strokeStyle = this.ringOuterStrokeStyle;
 
@@ -62,27 +71,50 @@ class ColorPicker extends HTMLElement {
         this.context.arc(this.circleCenter.x, this.circleCenter.y, ringOuterRadius, 0, 2 * Math.PI);
         this.context.stroke();
 
-        this.context.strokeStyle = this.ringInnerStrokeStyle;
+        // ring inner for antialias
+        this.context.fillStyle = this.ringInnerFillStyle;
         
         this.context.beginPath();
         const ringInnerRadius = this.ringRadius - this.ringLineWidth / 2;
         this.context.arc(this.circleCenter.x, this.circleCenter.y, ringInnerRadius, 0, 2 * Math.PI);
-        this.context.stroke();
+        this.context.fill();
+        
+        // ring inner circle for beauty
+        this.context.fillStyle = this.ringInnerCircleFillStyle;
+        this.context.beginPath();
+        const ringInnerCircleRadius = ringInnerRadius * 0.7;
+        this.context.arc(this.circleCenter.x, this.circleCenter.y, ringInnerCircleRadius, 0, 2 * Math.PI);
+        this.context.fill();
     }
 
-    drawHueRingCursor(canvas) {
-
+    drawHueRingCursor() {
+        let angle = this.hsv.h * 2 * Math.PI;
+        let center = {
+            x: this.circleCenter.x + this.ringRadius * Math.cos(angle),
+            y: this.circleCenter.y + this.ringRadius * Math.sin(angle)
+        }
+        this.context.lineWidth = 2;
+        // first draw a bigger black circle
+        this.context.strokeStyle = "#000000";
+        this.context.beginPath();
+        this.context.arc(center.x, center.y, this.ringLineWidth / 2, 0, 2 * Math.PI);
+        this.context.stroke();
+        // second draw a smaller white circle
+        this.context.strokeStyle = "#FFFFFF";
+        this.context.beginPath();
+        this.context.arc(center.x, center.y, this.ringLineWidth / 2 - 1, 0, 2 * Math.PI);
+        this.context.stroke();
     }
 
     drawSvArea() {
         if (this.areaShape == "triangle") {
             this.drawSvTriangle();
         } else {
-            this.drawSvQuad();
+            this.drawSvQuadrangle();
         }
     }
 
-    drawSvQuad() {
+    drawSvQuadrangle() {
         const sideLength = Math.floor((this.ringRadius - this.ringLineWidth / 2) * Math.SQRT2) - 1;
         let imageData = this.context.createImageData(sideLength, sideLength);
         const xmin = this.circleCenter.x - sideLength / 2;
@@ -95,7 +127,7 @@ class ColorPicker extends HTMLElement {
                 let v = 1 - (y - ymin) / sideLength;
                 let [r, g, b] = ColorPicker.hsvToRgb(this.hsv.h, s, v);
 
-                let index = 4 * ((y - ymin) * sideLength + x - xmin);
+                let index = 4 * (Math.round(y - ymin) * sideLength + Math.round(x - xmin));
                 imageData.data[index + 0] = r;
                 imageData.data[index + 1] = g;
                 imageData.data[index + 2] = b;
@@ -107,11 +139,70 @@ class ColorPicker extends HTMLElement {
     }
 
     drawSvTriangle() {
+        const sqrt3 = Math.sqrt(3);
+        const sideLength = Math.floor((this.ringRadius - this.ringLineWidth / 2) * sqrt3) - 1;
+
+        const xmin = this.circleCenter.x - sideLength / 2 / sqrt3;
+        const xmax = this.circleCenter.x + sideLength / sqrt3;
+        const ymin = this.circleCenter.y - sideLength / 2;
+        const ymax = this.circleCenter.y + sideLength / 2;
+        let imageData = this.context.getImageData(xmin, ymin, sideLength, sideLength);
+
+        for (let x = xmin; x < xmax; ++x) {
+            const ylower = (x - xmax) / sqrt3 + this.circleCenter.y;
+            const yupper = 2 * this.circleCenter.y - ylower;
+
+            for (let y = ylower; y < yupper; ++y) {
+                let xNormalized = (x - xmin) / sideLength; // x in [0, sqrt3 / 2)
+                let yNormalized = (y - ymin) / sideLength; // y in [0, 1)
+                let s = Math.atan(xNormalized / (1 - yNormalized)) / (Math.PI / 3);
+                let v = xNormalized / sqrt3 + (1 - yNormalized);
+                let [r, g, b] = ColorPicker.hsvToRgb(this.hsv.h, s, v);
+
+                let index = 4 * (Math.round(y - ymin) * sideLength + Math.round(x - xmin));
+
+                imageData.data[index + 0] = r;
+                imageData.data[index + 1] = g;
+                imageData.data[index + 2] = b;
+                imageData.data[index + 3] = 255;
+            }
+        }
+
+        this.context.putImageData(imageData, xmin, ymin);
+        // draw outline for antialias
+        this.context.lineWidth = 1.5;
+        this.context.strokeStyle = this.backgroundColor;
+        this.context.beginPath();
+        this.context.moveTo(xmin, ymin);
+        this.context.lineTo(xmax, (ymin + ymax) / 2);
+        this.context.lineTo(xmin, ymax);
+        this.context.closePath();
+        this.context.stroke();
+    }
+
+    drawSvAreaCursor() {
+        if (this.areaShape == "triangle") {
+            this.areaShape = "quadrangle";
+        } else {
+            this.areaShape = "triangle";
+        }
+    }
+
+    drawSvQuadrangleCursor() {
+        // s, v => x, y
+    }
+
+    drawSvTriangleCursor() {
+        // s, v => x, y
 
     }
 
-    drawSvAreaCursor(canvas) {
-
+    switchAreaShape() {
+        if (this.areaShape == "triangle") {
+            this.areaShape = "quadrangle";
+        } else {
+            this.areaShape = "triangle";
+        }
     }
 
     drawSlider() {
